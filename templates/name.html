@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Hello {{first_name | upper}}</h1>
+
+<h2>Mis pizzas favoritas:</h2>
+<h2>Hello {{favorite_pizzas}}</h2>
+
+{% for item in favorite_pizzas %}
+    {% if item == 41 %}
+        {{ item+100 }} <br />
+    {% else %}
+        {{ item }} <br />
+    {% endif %}
+{% endfor %}
+
+<p>{{ favorite_pizzas.0 | reverse }}</p>
+<p>{{ favorite_pizzas.0 | replace("P", "Hola") }}</p>
+
+{% endblock %}

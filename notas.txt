@@ -1,0 +1,10 @@
+crear run.py y pegar todo del index. (app.y)
+set "FLASK_APP=index.py"
+
+SET "FLASK_APP=app.py"
+SET "FLASK_ENV=Development"
+flask run
+
+pip install flask-wtf
+
+copiar de user a name
