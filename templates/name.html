@@ -2,20 +2,26 @@
 
 {% block content %}
 
-<h1>Hello {{first_name | upper}}</h1>
+    {% for message in get_flashed_messages() %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+    {% endfor %}
 
-<h2>Mis pizzas favoritas:</h2>
-<h2>Hello {{favorite_pizzas}}</h2>
 
-{% for item in favorite_pizzas %}
-    {% if item == 41 %}
-        {{ item+100 }} <br />
+    {% if name %}
+        <h1>Hello {{ name }}</h1>
     {% else %}
-        {{ item }} <br />
+        <h1>What's Your Name?</h1>
+        <br/>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control") }}
+            <br/>
+            {{ form.submit(class="btn btn-secondary") }}
+        </form>
     {% endif %}
-{% endfor %}
-
-<p>{{ favorite_pizzas.0 | reverse }}</p>
-<p>{{ favorite_pizzas.0 | replace("P", "Hola") }}</p>
-
 {% endblock %}
