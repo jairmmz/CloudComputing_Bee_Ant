@@ -8,3 +8,8 @@ flask run
 pip install flask-wtf
 
 copiar de user a name
+
+python
+from app import db
+db.create_all()
+exit()
