@@ -1,4 +1,5 @@
-from flask import Flask, render_template, flash
+from urllib import request
+from flask import Flask, render_template, flash, request
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
@@ -11,7 +12,7 @@ app = Flask(__name__)
 
 # Add database
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql:///root:@localhost/users'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/users'
 
 # Secret key
 app.config['SECRET_KEY'] = 'My super secret that no one is supposed to know'
@@ -55,8 +56,7 @@ def index():
     flash("Welcome To Our Website!")
     stuff = 'This is bold text'
     favorite_pizzas = ['Peperoni', 'Queso', 'Italiana', 41]
-    return render_template("index.html",
-                           first_name=first_name, stuff=stuff, favorite_pizzas=favorite_pizzas)
+    return render_template("index.html", first_name=first_name, stuff=stuff, favorite_pizzas=favorite_pizzas)
 
 # Create User Page
 @app.route('/user/<name>')
@@ -83,19 +83,53 @@ def add_user():
     form = UserForm()
     # Validate Form
     if form.validate_on_submit():
-        user=Users.query.filter_by(email=form.email.data).first()
+        user = Users.query.filter_by(email=form.email.data).first()
         if user is None:
-            user=Users(name=form.name.data, email=form.email.data)
+            user = Users(name=form.name.data, email=form.email.data)
             db.session.add(user)
             db.session.commit()
-        name=form.name.data
-        form.name.data=''
-        form.email.data=''
-        flash("User Add Succesfully!")
-    our_users=Users.query.order_by(Users.date_added)
+        name = form.name.data
+        form.name.data = ''
+        form.email.data = ''
+        flash("User Added Succesfully!")
+    our_users = Users.query.order_by(Users.date_added)
     return render_template('add_user.html', form=form, name=name, our_users=our_users)
 
+# Update User
+@app.route('/update/<int:id>', methods=['GET', 'POST'])
+def update_user(id):
+    form = UserForm()
+    name_update = Users.query.get_or_404(id)
+    if request.method == "POST":
+        name_update.name = request.form['name']
+        name_update.email = request.form['email']
+        try:
+            db.session.commit()
+            flash("User updated successfully!")
+            return render_template('update_user.html', form=form, name_update=name_update)
+        except:
+            flash("Error! in update user!")
+            return render_template('update_user.html', form=form, name_update=name_update)
+    else:
+        return render_template('update_user.html', form=form, name_update=name_update)
 
+# Delete User
+@app.route('/delete/<int:id>')
+def delete_user(id):
+    user_delete = Users.query.get_or_404(id)
+    name = None
+    form = UserForm()
+    try:
+        db.session.delete(user_delete)
+        db.session.commit()
+        flash("User deleted successfully!")
+
+        our_users = Users.query.order_by(Users.date_added)
+        return render_template('add_user.html', form=form, name=name, our_users=our_users)
+
+    except:
+        flash("Ops! There was a problem from deleted User!")
+        return render_template('add_user.html', form=form, name=name, our_users=our_users)
 
 # Invalid URL
 @app.errorhandler(404)

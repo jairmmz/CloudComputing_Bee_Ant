@@ -5,9 +5,9 @@
     {% for message in get_flashed_messages() %}
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
             </button>
-            <span aria-hidden="true">&times;</span>
         </div>
         
     {% endfor %}
@@ -20,8 +20,9 @@
         {% endfor %}
         <br>
     {% else %}
-        <h1>User List</h1>
+        <h1>User Add</h1>
         <br/>
+        <div class="shadow p-3 mb-5 bg-body rounded">
         <form method="POST">
             {{ form.hidden_tag() }}
             {{ form.name.label(class="form-label") }}
@@ -30,13 +31,37 @@
             {{ form.email.label(class="form-label") }}
             {{ form.email(class="form-control") }}
             <br/>
-            {{ form.submit(class="btn btn-secondary") }}
+            {{ form.submit(class="btn btn-primary") }}
         </form>
-
+        </div>
         <br>
-        {% for our_user in our_user %}
-        {{  our_user.id }}. {{ our_user.name }}-{{ our_user.email }} <br>
-        {% endfor %}
+
+        <h2>User List</h2>
+        <table id="data" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Date Added</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for our_user in our_users %}
+                <tr>
+                    <td>{{ our_user.id }}</td>
+                    <td>{{ our_user.name }}</td>
+                    <td>{{ our_user.email }}</td>
+                    <td>{{ our_user.date_added }}</td>
+                    <td>
+                        <a class="btn btn-primary" href="{{ url_for('update_user', id = our_user.id) }}">Update</a>
+                        <a class="btn btn-danger" href="{{ url_for('delete_user', id = our_user.id) }}">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
     {% endif %}
 {% endblock %}
