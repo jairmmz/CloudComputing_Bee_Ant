@@ -1,8 +1,8 @@
 from urllib import request
-from flask import Flask, render_template, flash, request
+from flask import Flask, render_template, flash, request, redirect
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms import StringField, SubmitField, validators
+from wtforms.validators import DataRequired, Regexp, InputRequired
 
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -34,14 +34,8 @@ class Users(db.Model):
 
 # CREATE FORM CLASS
 class UserForm(FlaskForm):
-    name = StringField("Name", validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired()])
-    submit = SubmitField('Submit')
-
-# CREATE FORM CLASS
-class NameForm(FlaskForm):
-    name = StringField("Name", validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired()])
+    name = StringField("Name",[validators.Length(min=4, max=35)])
+    email = StringField('Email', [validators.Length(min=6, max=35)])
     submit = SubmitField('Submit')
 
 # CREATE FORM CLASS
@@ -73,7 +67,7 @@ def name():
     if form.validate_on_submit():
         name = form.name.data
         form.name.data = ''
-        flash("From Submitted Successfully!")
+        flash("Submitted Name Successfully!")
     return render_template('name.html', name=name, form=form)
 
 # Create Add User
@@ -88,12 +82,15 @@ def add_user():
             user = Users(name=form.name.data, email=form.email.data)
             db.session.add(user)
             db.session.commit()
-        name = form.name.data
-        form.name.data = ''
-        form.email.data = ''
-        flash("User Added Succesfully!")
+            name = form.name.data
+            form.name.data = ''
+            form.email.data = ''
+            flash("User Added Succesfully!")
+        else:
+            flash("The email already exists, please register another email!")
     our_users = Users.query.order_by(Users.date_added)
     return render_template('add_user.html', form=form, name=name, our_users=our_users)
+        
 
 # Update User
 @app.route('/update/<int:id>', methods=['GET', 'POST'])
@@ -101,14 +98,19 @@ def update_user(id):
     form = UserForm()
     name_update = Users.query.get_or_404(id)
     if request.method == "POST":
-        name_update.name = request.form['name']
-        name_update.email = request.form['email']
-        try:
-            db.session.commit()
-            flash("User updated successfully!")
-            return render_template('update_user.html', form=form, name_update=name_update)
-        except:
-            flash("Error! in update user!")
+        user = Users.query.filter_by(email=form.email.data).first()
+        if user is None:          
+            name_update.name = request.form['name']
+            name_update.email = request.form['email']
+            try:
+                db.session.commit()
+                flash("User updated successfully!")
+                return redirect('/user/add')
+            except:
+                flash("Error! in update user!")
+                return render_template('update_user.html', form=form, name_update=name_update)
+        else:
+            flash("The email already exists, please register another email!")
             return render_template('update_user.html', form=form, name_update=name_update)
     else:
         return render_template('update_user.html', form=form, name_update=name_update)
@@ -125,11 +127,14 @@ def delete_user(id):
         flash("User deleted successfully!")
 
         our_users = Users.query.order_by(Users.date_added)
-        return render_template('add_user.html', form=form, name=name, our_users=our_users)
+        return redirect('/user/add')
 
     except:
         flash("Ops! There was a problem from deleted User!")
-        return render_template('add_user.html', form=form, name=name, our_users=our_users)
+        return render_template('/user/add')
+
+
+
 
 # Invalid URL
 @app.errorhandler(404)
