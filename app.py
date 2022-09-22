@@ -97,20 +97,15 @@ def add_user():
 def update_user(id):
     form = UserForm()
     name_update = Users.query.get_or_404(id)
-    if request.method == "POST":
-        user = Users.query.filter_by(email=form.email.data).first()
-        if user is None:          
-            name_update.name = request.form['name']
-            name_update.email = request.form['email']
-            try:
-                db.session.commit()
-                flash("User updated successfully!")
-                return redirect('/user/add')
-            except:
-                flash("Error! in update user!")
-                return render_template('update_user.html', form=form, name_update=name_update)
-        else:
-            flash("The email already exists, please register another email!")
+    if request.method == "POST":   
+        name_update.name = request.form['name']
+        name_update.email = request.form['email']
+        try:
+            db.session.commit()
+            flash("User updated successfully!")
+            return redirect('/user/add')
+        except:
+            flash("Error! in update user!")
             return render_template('update_user.html', form=form, name_update=name_update)
     else:
         return render_template('update_user.html', form=form, name_update=name_update)
